@@ -1,45 +1,36 @@
-// ===== AUTH UTILITIES =====
-const AUTH_KEY = 'vb_auth_session';
+// ====================================================
+// VAULTBANK – CORE LOGIC (all using account number)
+// ====================================================
+
 const USERS_KEY = 'vb_users';
 const TRANSACTIONS_KEY = 'vb_transactions';
+const SESSION_KEY = 'vb_session';
 
-// Get all users from localStorage
+// ---------- Users ----------
 function getUsers() {
-    const users = localStorage.getItem(USERS_KEY);
-    return users ? JSON.parse(users) : {};
+    return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
 }
-
-// Save users to localStorage
 function saveUsers(users) {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
-// Get current session
+// ---------- Session (stores account number) ----------
 function getSession() {
-    const session = localStorage.getItem(AUTH_KEY);
-    return session ? JSON.parse(session) : null;
+    return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
 }
-
-// Set session
 function setSession(user) {
-    localStorage.setItem(AUTH_KEY, JSON.stringify({
-        email: user.email,
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+        accountNumber: user.accountNumber,
         fullName: user.fullName,
-        loggedInAt: new Date().toISOString()
+        email: user.email
     }));
 }
-
-// Clear session (logout)
 function clearSession() {
-    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(SESSION_KEY);
 }
-
-// Check if user is logged in
 function isLoggedIn() {
     return getSession() !== null;
 }
-
-// Redirect if not logged in (for protected pages)
 function requireAuth() {
     if (!isLoggedIn()) {
         window.location.href = 'index.html';
@@ -48,94 +39,71 @@ function requireAuth() {
     return getSession();
 }
 
-// Get current user's full data
+// ---------- Current user ----------
 function getCurrentUser() {
     const session = getSession();
     if (!session) return null;
     const users = getUsers();
-    return users[session.email] || null;
+    return users[session.accountNumber] || null;
 }
 
-// Show toast notification
-function showToast(message, type = 'info') {
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) existingToast.remove();
-    
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// Format currency
-function formatCurrency(amount) {
-    return '$' + parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-}
-
-// Format date
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-// Get transactions for current user
+// ---------- Transactions ----------
 function getUserTransactions() {
     const session = getSession();
     if (!session) return [];
-    const allTransactions = localStorage.getItem(TRANSACTIONS_KEY);
-    const transactions = allTransactions ? JSON.parse(allTransactions) : {};
-    return transactions[session.email] || [];
+    const all = JSON.parse(localStorage.getItem(TRANSACTIONS_KEY) || '{}');
+    return all[session.accountNumber] || [];
 }
 
-// Add transaction for current user
-function addTransaction(transaction) {
+function addTransaction(txn) {
     const session = getSession();
     if (!session) return;
-    const allTransactions = localStorage.getItem(TRANSACTIONS_KEY);
-    const transactions = allTransactions ? JSON.parse(allTransactions) : {};
-    if (!transactions[session.email]) {
-        transactions[session.email] = [];
-    }
-    transactions[session.email].unshift({
-        ...transaction,
+    const all = JSON.parse(localStorage.getItem(TRANSACTIONS_KEY) || '{}');
+    const key = session.accountNumber;
+    if (!all[key]) all[key] = [];
+    all[key].unshift({
+        ...txn,
         id: 'txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         date: new Date().toISOString()
     });
-    localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
+    localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(all));
 }
 
-// Update user balance
 function updateBalance(amount, type = 'debit') {
     const session = getSession();
     if (!session) return false;
     const users = getUsers();
-    const user = users[session.email];
+    const user = users[session.accountNumber];
     if (!user) return false;
-    
-    const numAmount = parseFloat(amount);
+    const num = parseFloat(amount);
     if (type === 'debit') {
-        if (user.balance < numAmount) return false;
-        user.balance -= numAmount;
+        if (user.balance < num) return false;
+        user.balance -= num;
     } else {
-        user.balance += numAmount;
+        user.balance += num;
     }
     saveUsers(users);
     return true;
 }
 
-// Logout function
+// ---------- Helpers ----------
+function formatCurrency(amount) {
+    // Changed to Nigerian Naira (₦)
+    return '₦' + Number(amount).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+function showToast(msg, type = 'info') {
+    const old = document.querySelector('.toast');
+    if (old) old.remove();
+    const div = document.createElement('div');
+    div.className = `toast toast-${type}`;
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => { div.style.opacity = '0'; setTimeout(() => div.remove(), 300); }, 3000);
+}
 function logout() {
     clearSession();
     window.location.href = 'index.html';

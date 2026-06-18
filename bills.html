@@ -1,160 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VaultBank - Pay Bills</title>
-    <link rel="stylesheet" href="bank.css">
+    <link rel="stylesheet" href="bank.css" />
 </head>
 <body>
     <div class="main-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-logo">
-                <div class="logo-small">
-                    <div class="icon">VB</div>
-                    <span>VaultBank</span>
-                </div>
-            </div>
+            <div class="sidebar-logo"><div class="logo-small"><div class="icon">VB</div><span>VaultBank</span></div></div>
             <nav class="sidebar-nav">
-                <a href="dashboard.html">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                    Dashboard
-                </a>
-                <a href="transfer.html">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                    Transfer
-                </a>
-                <a href="bills.html" class="active">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                    Pay Bills
-                </a>
-                <a href="history.html">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    History
-                </a>
+                <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Dashboard</a>
+                <a href="transfer.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Transfer</a>
+                <a href="bills.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Pay Bills</a>
+                <a href="history.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> History</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="user-info" id="sidebarUser"></div>
-                <button class="btn btn-outline btn-sm" onclick="logout()" style="width:100%;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    Sign Out
-                </button>
+                <button class="btn btn-outline btn-sm" onclick="logout()" style="width:100%;">Sign Out</button>
             </div>
         </aside>
-        
         <main class="main-content">
             <div class="top-bar">
-                <div>
-                    <h2>Pay Bills</h2>
-                    <div class="breadcrumb">Home / <span>Pay Bills</span></div>
-                </div>
-                <div style="font-weight:600;color:var(--gray-600);">
-                    Balance: <span id="currentBalance" style="color:var(--primary);">$0.00</span>
-                </div>
+                <div><h2>Pay Bills</h2><div class="breadcrumb">Home / <span>Pay Bills</span></div></div>
+                <div style="font-weight:600;color:var(--gray-600);">Balance: <span id="currentBalance" style="color:var(--primary);">$0.00</span></div>
             </div>
-            
-            <!-- Biller Categories -->
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
-                <div class="card" style="text-align:center;cursor:pointer;transition:all 0.2s;" onclick="selectBiller('Electric Company', '123456789')">
+                <div class="card" style="text-align:center;cursor:pointer;" onclick="selectBiller('Electric Company', '123456789')">
                     <div style="font-size:36px;margin-bottom:8px;">⚡</div>
                     <div style="font-weight:600;">Electricity</div>
                     <div style="font-size:12px;color:var(--gray-400);">Electric Company</div>
                 </div>
-                <div class="card" style="text-align:center;cursor:pointer;transition:all 0.2s;" onclick="selectBiller('City Water Services', '987654321')">
+                <div class="card" style="text-align:center;cursor:pointer;" onclick="selectBiller('City Water Services', '987654321')">
                     <div style="font-size:36px;margin-bottom:8px;">💧</div>
                     <div style="font-weight:600;">Water</div>
                     <div style="font-size:12px;color:var(--gray-400);">City Water Services</div>
                 </div>
-                <div class="card" style="text-align:center;cursor:pointer;transition:all 0.2s;" onclick="selectBiller('NetConnect ISP', '456789123')">
+                <div class="card" style="text-align:center;cursor:pointer;" onclick="selectBiller('NetConnect ISP', '456789123')">
                     <div style="font-size:36px;margin-bottom:8px;">🌐</div>
                     <div style="font-weight:600;">Internet</div>
                     <div style="font-size:12px;color:var(--gray-400);">NetConnect ISP</div>
                 </div>
-                <div class="card" style="text-align:center;cursor:pointer;transition:all 0.2s;" onclick="selectBiller('MobileTel Communications', '789123456')">
+                <div class="card" style="text-align:center;cursor:pointer;" onclick="selectBiller('MobileTel Communications', '789123456')">
                     <div style="font-size:36px;margin-bottom:8px;">📱</div>
                     <div style="font-weight:600;">Phone</div>
                     <div style="font-size:12px;color:var(--gray-400);">MobileTel</div>
                 </div>
             </div>
-            
-            <!-- Bill Pay Form -->
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                 <div class="card">
-                    <div class="card-header">
-                        <h3>Pay a Bill</h3>
-                    </div>
+                    <div class="card-header"><h3>Pay a Bill</h3></div>
                     <div class="error-message" id="errorMsg"></div>
                     <div class="success-message" id="successMsg"></div>
                     <form id="billForm">
                         <div class="form-group">
                             <label for="billerName">Biller</label>
-                            <input type="text" id="billerName" placeholder="Select a biller above" required readonly>
+                            <input type="text" id="billerName" placeholder="Select a biller above" required readonly />
                         </div>
                         <div class="form-group">
                             <label for="accountNumber">Biller Account #</label>
-                            <input type="text" id="accountNumber" placeholder="Account number" required readonly>
+                            <input type="text" id="accountNumber" placeholder="Account number" required readonly />
                         </div>
                         <div class="form-group">
                             <label for="billAmount">Amount ($)</label>
-                            <input type="number" id="billAmount" placeholder="0.00" required min="1" step="0.01">
+                            <input type="number" id="billAmount" placeholder="0.00" required min="1" step="0.01" />
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                            Pay Bill
-                        </button>
+                        <button type="submit" class="btn btn-primary">Pay Bill</button>
                     </form>
                 </div>
-                
-                <!-- Recent Bills -->
                 <div class="card">
-                    <div class="card-header">
-                        <h3>Recent Bill Payments</h3>
-                    </div>
-                    <div id="recentBillsList">
-                        <div class="empty-state">
-                            <p>No recent bill payments</p>
-                        </div>
-                    </div>
+                    <div class="card-header"><h3>Recent Bill Payments</h3></div>
+                    <div id="recentBillsList"><div class="empty-state"><p>No recent bill payments</p></div></div>
                 </div>
             </div>
         </main>
     </div>
-    
     <script src="bank.js"></script>
     <script>
         const session = requireAuth();
         const user = getCurrentUser();
-        
+
         document.getElementById('sidebarUser').innerHTML = `
             <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
-            <div>
-                <div class="user-name">${user.fullName}</div>
-                <div class="user-email">${user.email}</div>
-            </div>
+            <div><div class="user-name">${user.fullName}</div><div class="user-email">${user.email}</div></div>
         `;
         document.getElementById('currentBalance').textContent = formatCurrency(user.balance);
-        
-        // Select biller
-        function selectBiller(name, accountNum) {
+
+        function selectBiller(name, acc) {
             document.getElementById('billerName').value = name;
-            document.getElementById('accountNumber').value = accountNum;
+            document.getElementById('accountNumber').value = acc;
             document.getElementById('billAmount').focus();
         }
-        
-        // Load recent bill payments
+
         function loadRecentBills() {
-            const transactions = getUserTransactions();
-            const bills = transactions.filter(t => t.category === 'bill').slice(0, 5);
+            const txns = getUserTransactions().filter(t => t.category === 'bill').slice(0, 5);
             const container = document.getElementById('recentBillsList');
-            
-            if (bills.length > 0) {
-                container.innerHTML = bills.map(t => `
+            if (txns.length > 0) {
+                container.innerHTML = txns.map(t => `
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-100);">
-                        <div>
-                            <div style="font-weight:600;font-size:14px;">${t.description}</div>
-                            <div style="font-size:12px;color:var(--gray-400);">${formatDate(t.date)}</div>
-                        </div>
+                        <div><div style="font-weight:600;font-size:14px;">${t.description}</div><div style="font-size:12px;color:var(--gray-400);">${formatDate(t.date)}</div></div>
                         <div class="amount-debit" style="font-weight:700;">-${formatCurrency(t.amount)}</div>
                     </div>
                 `).join('');
@@ -163,62 +108,41 @@
             }
         }
         loadRecentBills();
-        
-        // Handle bill payment
+
         document.getElementById('billForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const errorMsg = document.getElementById('errorMsg');
-            const successMsg = document.getElementById('successMsg');
-            errorMsg.classList.remove('show');
-            successMsg.classList.remove('show');
-            
-            const billerName = document.getElementById('billerName').value;
-            const accountNumber = document.getElementById('accountNumber').value;
+            const err = document.getElementById('errorMsg');
+            const suc = document.getElementById('successMsg');
+            err.classList.remove('show'); suc.classList.remove('show');
+
+            const biller = document.getElementById('billerName').value;
+            const acc = document.getElementById('accountNumber').value;
             const amount = parseFloat(document.getElementById('billAmount').value);
-            
-            if (!billerName || !accountNumber) {
-                errorMsg.textContent = 'Please select a biller first.';
-                errorMsg.classList.add('show');
-                return;
-            }
-            
-            if (isNaN(amount) || amount <= 0) {
-                errorMsg.textContent = 'Please enter a valid amount.';
-                errorMsg.classList.add('show');
-                return;
-            }
-            
-            if (amount > user.balance) {
-                errorMsg.textContent = 'Insufficient funds. Your balance is ' + formatCurrency(user.balance) + '.';
-                errorMsg.classList.add('show');
-                return;
-            }
-            
-            // Process payment
+
+            if (!biller || !acc) { err.textContent = 'Please select a biller first.'; err.classList.add('show'); return; }
+            if (isNaN(amount) || amount <= 0) { err.textContent = 'Enter a valid amount.'; err.classList.add('show'); return; }
+            if (amount > user.balance) { err.textContent = 'Insufficient funds. Balance: ' + formatCurrency(user.balance); err.classList.add('show'); return; }
+
             const newBalance = user.balance - amount;
             const users = getUsers();
-            users[user.email].balance = newBalance;
+            users[user.accountNumber].balance = newBalance;
             saveUsers(users);
-            
+
             addTransaction({
-                description: `Bill Payment - ${billerName} (Acct: ${accountNumber.slice(-4)})`,
+                description: `Bill Payment - ${biller} (Acct: ${acc.slice(-4)})`,
                 amount: amount,
                 type: 'debit',
                 category: 'bill',
                 balanceAfter: newBalance,
                 status: 'completed'
             });
-            
-            document.getElementById('currentBalance').textContent = formatCurrency(newBalance);
+
             user.balance = newBalance;
-            
-            successMsg.textContent = `Successfully paid ${formatCurrency(amount)} to ${billerName}!`;
-            successMsg.classList.add('show');
-            showToast('Bill paid successfully!', 'success');
-            
-            document.getElementById('billAmount').value = '';
-            document.getElementById('billerName').value = '';
-            document.getElementById('accountNumber').value = '';
+            document.getElementById('currentBalance').textContent = formatCurrency(newBalance);
+            suc.textContent = `Successfully paid ${formatCurrency(amount)} to ${biller}!`;
+            suc.classList.add('show');
+            showToast('Bill paid!', 'success');
+            document.getElementById('billForm').reset();
             loadRecentBills();
         });
     </script>

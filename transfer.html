@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VaultBank - Transfer</title>
-    <link rel="stylesheet" href="bank.css">
+    <link rel="stylesheet" href="bank.css" />
 </head>
 <body>
     <div class="main-container">
-        <!-- Sidebar (same as dashboard) -->
+        <!-- Sidebar (unchanged) -->
         <aside class="sidebar">
             <div class="sidebar-logo">
-                <div class="logo-small">
-                    <div class="icon">VB</div>
-                    <span>VaultBank</span>
-                </div>
+                <div class="logo-small"><div class="icon">VB</div><span>VaultBank</span></div>
             </div>
             <nav class="sidebar-nav">
                 <a href="dashboard.html">
@@ -36,13 +33,10 @@
             </nav>
             <div class="sidebar-footer">
                 <div class="user-info" id="sidebarUser"></div>
-                <button class="btn btn-outline btn-sm" onclick="logout()" style="width:100%;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    Sign Out
-                </button>
+                <button class="btn btn-outline btn-sm" onclick="logout()" style="width:100%;">Sign Out</button>
             </div>
         </aside>
-        
+
         <main class="main-content">
             <div class="top-bar">
                 <div>
@@ -53,193 +47,257 @@
                     Balance: <span id="currentBalance" style="color:var(--primary);">$0.00</span>
                 </div>
             </div>
-            
+
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                 <!-- Transfer Form -->
                 <div class="card">
-                    <div class="card-header">
-                        <h3>Send Money</h3>
-                    </div>
+                    <div class="card-header"><h3>Send Money</h3></div>
                     <div class="error-message" id="errorMsg"></div>
                     <div class="success-message" id="successMsg"></div>
                     <form id="transferForm">
+                        <!-- Bank Selection -->
                         <div class="form-group">
-                            <label for="recipientPhone">Recipient Phone Number</label>
-                            <input type="tel" id="recipientPhone" placeholder="e.g. 5551234567" required>
-                            <div class="form-hint">Enter the recipient's registered phone number (account number)</div>
+                            <label for="recipientBank">Select Bank</label>
+                            <select id="recipientBank" required>
+                                <option value=""> Choose Bank </option>
+                                <option value="VaultBank">VaultBank (Internal)</option>
+                                <option value="GTBank">GTBank</option>
+                                <option value="Opay">Opay</option>
+                                <option value="Kuda Bank">Kuda Bank</option>
+                                <option value="First Bank">First Bank</option>
+                                <option value="Access Bank">Access Bank</option>
+                                <option value="Zenith Bank">Zenith Bank</option>
+                                <option value="UBA">UBA</option>
+                                <option value="Fidelity Bank">Fidelity Bank</option>
+                                <option value="PalmPay">PalmPay</option>
+                                <option value="Moniepoint">Moniepoint</option>
+                            </select>
+                            <div class="form-hint">Select the recipient's bank. If it's a VaultBank user, choose "VaultBank"</div>
                         </div>
+
+                        <!-- Account Number -->
+                        <div class="form-group">
+                            <label for="recipientAccount">Recipient Account Number</label>
+                            <input type="text" id="recipientAccount" placeholder="e.g. 1234567890" required inputmode="numeric" pattern="[0-9]*" />
+                            <div class="form-hint">Enter the recipient's account number (for VaultBank, this is their phone number)</div>
+                        </div>
+
+                        <!-- Amount -->
                         <div class="form-group">
                             <label for="transferAmount">Amount ($)</label>
-                            <input type="number" id="transferAmount" placeholder="0.00" required min="1" step="0.01">
+                            <input type="number" id="transferAmount" placeholder="0.00" required min="1" step="0.01" />
                         </div>
+
+                        <!-- Note -->
                         <div class="form-group">
                             <label for="transferNote">Note (Optional)</label>
-                            <input type="text" id="transferNote" placeholder="What's this for?">
+                            <input type="text" id="transferNote" placeholder="What's this for?" />
                         </div>
+
                         <button type="submit" class="btn btn-primary">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
                             Send Money
                         </button>
                     </form>
                 </div>
-                
-                <!-- Quick Info -->
+
+                <!-- Recent Transfers -->
                 <div class="card">
-                    <div class="card-header">
-                        <h3>Recent Transfers</h3>
-                    </div>
+                    <div class="card-header"><h3>Recent Transfers</h3></div>
                     <div id="recentTransfersList">
-                        <div class="empty-state">
-                            <p>No recent transfers</p>
-                        </div>
+                        <div class="empty-state"><p>No recent transfers</p></div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-    
+
     <script src="bank.js"></script>
-<script>
-    const session = requireAuth();
-    const user = getCurrentUser();
-    
-    // Sidebar user info
-    document.getElementById('sidebarUser').innerHTML = `
-        <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
-        <div>
-            <div class="user-name">${user.fullName}</div>
-            <div class="user-email">${user.email}</div>
-        </div>
-    `;
-    document.getElementById('currentBalance').textContent = formatCurrency(user.balance);
-    
-    // Load recent outgoing transfers
-    function loadRecentTransfers() {
-        const transactions = getUserTransactions();
-        const transfers = transactions.filter(t => t.category === 'transfer').slice(0, 5);
-        const container = document.getElementById('recentTransfersList');
-        
-        if (transfers.length > 0) {
-            container.innerHTML = transfers.map(t => `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-100);">
-                    <div>
-                        <div style="font-weight:600;font-size:14px;">${t.description}</div>
-                        <div style="font-size:12px;color:var(--gray-400);">${formatDate(t.date)}</div>
+    <script>
+        const session = requireAuth();
+        const user = getCurrentUser();
+
+        // Sidebar user info
+        document.getElementById('sidebarUser').innerHTML = `
+            <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
+            <div>
+                <div class="user-name">${user.fullName}</div>
+                <div class="user-email">${user.email}</div>
+            </div>
+        `;
+        document.getElementById('currentBalance').textContent = formatCurrency(user.balance);
+
+        // Load recent transfers
+        function loadRecentTransfers() {
+            const txns = getUserTransactions().filter(t => t.category === 'transfer').slice(0, 5);
+            const container = document.getElementById('recentTransfersList');
+            if (txns.length > 0) {
+                container.innerHTML = txns.map(t => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-100);">
+                        <div>
+                            <div style="font-weight:600;font-size:14px;">${t.description}</div>
+                            <div style="font-size:12px;color:var(--gray-400);">${formatDate(t.date)}</div>
+                        </div>
+                        <div class="amount-debit" style="font-weight:700;">-${formatCurrency(t.amount)}</div>
                     </div>
-                    <div class="amount-debit" style="font-weight:700;">-${formatCurrency(t.amount)}</div>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<div class="empty-state"><p>No recent transfers</p></div>';
-        }
-    }
-    loadRecentTransfers();
-    
-    // Handle transfer submission
-    document.getElementById('transferForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const errorMsg = document.getElementById('errorMsg');
-        const successMsg = document.getElementById('successMsg');
-        errorMsg.classList.remove('show');
-        successMsg.classList.remove('show');
-        
-        // Get recipient phone number (digits only) from the corrected input field
-        let recipientPhone = document.getElementById('recipientPhone').value.trim();
-        recipientPhone = recipientPhone.replace(/\D/g, '');  // strip non-digits
-        
-        const amount = parseFloat(document.getElementById('transferAmount').value);
-        const note = document.getElementById('transferNote').value.trim();
-        
-        // --- Validation ---
-        if (recipientPhone.length < 10) {
-            errorMsg.textContent = 'Please enter a valid phone number (at least 10 digits).';
-            errorMsg.classList.add('show');
-            return;
-        }
-        
-        if (recipientPhone === user.accountNumber) {
-            errorMsg.textContent = 'You cannot send money to yourself.';
-            errorMsg.classList.add('show');
-            return;
-        }
-        
-        if (isNaN(amount) || amount <= 0) {
-            errorMsg.textContent = 'Please enter a valid amount greater than $0.';
-            errorMsg.classList.add('show');
-            return;
-        }
-        
-        if (amount > user.balance) {
-            errorMsg.textContent = 'Insufficient funds. Your balance is ' + formatCurrency(user.balance) + '.';
-            errorMsg.classList.add('show');
-            return;
-        }
-        
-        // --- Find recipient by phone number (account number) ---
-        const users = getUsers();
-        let recipientEmail = null;
-        let recipientUser = null;
-        
-        for (const [email, u] of Object.entries(users)) {
-            if (u.accountNumber === recipientPhone) {
-                recipientEmail = email;
-                recipientUser = u;
-                break;
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="empty-state"><p>No recent transfers</p></div>';
             }
         }
-        
-        if (!recipientUser) {
-            errorMsg.textContent = 'No account found with that phone number.';
-            errorMsg.classList.add('show');
-            return;
-        }
-        
-        // --- Process the transfer ---
-        const senderNewBalance = user.balance - amount;
-        users[user.email].balance = senderNewBalance;
-        users[recipientEmail].balance += amount;
-        saveUsers(users);
-        
-        // Sender's transaction record
-        addTransaction({
-            description: note ? `Transfer to ${recipientUser.fullName}: ${note}` : `Transfer to ${recipientUser.fullName}`,
-            amount: amount,
-            type: 'debit',
-            category: 'transfer',
-            balanceAfter: senderNewBalance,
-            status: 'completed',
-            recipient: recipientEmail
-        });
-        
-        // Recipient's transaction record
-        const allTransactions = localStorage.getItem(TRANSACTIONS_KEY);
-        const transactions = allTransactions ? JSON.parse(allTransactions) : {};
-        if (!transactions[recipientEmail]) transactions[recipientEmail] = [];
-        transactions[recipientEmail].unshift({
-            id: 'txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-            date: new Date().toISOString(),
-            description: note ? `Transfer from ${user.fullName}: ${note}` : `Transfer from ${user.fullName}`,
-            amount: amount,
-            type: 'credit',
-            category: 'transfer',
-            balanceAfter: users[recipientEmail].balance,
-            status: 'completed',
-            sender: user.email
-        });
-        localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
-        
-        // --- Update UI ---
-        document.getElementById('currentBalance').textContent = formatCurrency(senderNewBalance);
-        user.balance = senderNewBalance;  // keep local user object in sync
-        
-        successMsg.textContent = `Successfully sent ${formatCurrency(amount)} to ${recipientUser.fullName}!`;
-        successMsg.classList.add('show');
-        showToast('Transfer successful!', 'success');
-        
-        // Reset the form and refresh recent transfers list
-        document.getElementById('transferForm').reset();
         loadRecentTransfers();
-    });
-</script>
+
+        // ---------- Transfer Logic ----------
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const err = document.getElementById('errorMsg');
+            const suc = document.getElementById('successMsg');
+            err.classList.remove('show');
+            suc.classList.remove('show');
+
+            // 1. Get values
+            const bank = document.getElementById('recipientBank').value;
+            let account = document.getElementById('recipientAccount').value.trim().replace(/\D/g, '');
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const note = document.getElementById('transferNote').value.trim();
+
+            // 2. Validate
+            if (!bank) {
+                err.textContent = 'Please select a bank.';
+                err.classList.add('show');
+                return;
+            }
+            if (account.length < 4) {
+                err.textContent = 'Please enter a valid account number (at least 4 digits).';
+                err.classList.add('show');
+                return;
+            }
+            if (isNaN(amount) || amount <= 0) {
+                err.textContent = 'Please enter a valid amount greater than $0.';
+                err.classList.add('show');
+                return;
+            }
+            if (amount > user.balance) {
+                err.textContent = 'Insufficient funds. Your balance is ' + formatCurrency(user.balance) + '.';
+                err.classList.add('show');
+                return;
+            }
+
+            // 3. Check if it's an internal VaultBank transfer
+            const users = getUsers();
+            let recipientUser = null;
+            let recipientKey = null;
+
+            if (bank === 'VaultBank') {
+                // Try to find user by account number (phone digits)
+                recipientUser = users[account];
+                if (recipientUser) {
+                    recipientKey = account;
+                } else {
+                    err.textContent = 'No VaultBank account found with that account number.';
+                    err.classList.add('show');
+                    return;
+                }
+                // Prevent self-transfer
+                if (account === user.accountNumber) {
+                    err.textContent = 'You cannot send money to yourself.';
+                    err.classList.add('show');
+                    return;
+                }
+            }
+
+            // 4. Process transfer
+            const senderNewBalance = user.balance - amount;
+            const usersCopy = getUsers(); // refresh in case of changes
+
+            // Update sender balance
+            usersCopy[user.accountNumber].balance = senderNewBalance;
+
+            // If internal, update recipient balance
+            let recipientName = recipientUser ? recipientUser.fullName : 'External Account';
+            if (bank !== 'VaultBank') {
+                // External transfer: we don't update recipient balance locally
+                // Just record the transaction
+                recipientName = bank + ' (' + account.slice(-4) + ')';
+            } else {
+                // Internal: update recipient balance
+                usersCopy[recipientKey].balance += amount;
+            }
+
+            saveUsers(usersCopy);
+
+            // 5. Add sender's transaction
+            const description = note
+                ? `Transfer to ${recipientName}${note ? ': ' + note : ''}`
+                : `Transfer to ${recipientName}`;
+
+            addTransaction({
+                description: description,
+                amount: amount,
+                type: 'debit',
+                category: 'transfer',
+                balanceAfter: senderNewBalance,
+                status: 'completed'
+            });
+
+            // 6. If internal, also add recipient's transaction
+            if (bank === 'VaultBank' && recipientUser) {
+                const all = JSON.parse(localStorage.getItem(TRANSACTIONS_KEY) || '{}');
+                if (!all[recipientKey]) all[recipientKey] = [];
+                all[recipientKey].unshift({
+                    id: 'txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                    date: new Date().toISOString(),
+                    description: note
+                        ? `Transfer from ${user.fullName}: ${note}`
+                        : `Transfer from ${user.fullName}`,
+                    amount: amount,
+                    type: 'credit',
+                    category: 'transfer',
+                    balanceAfter: usersCopy[recipientKey].balance,
+                    status: 'completed'
+                });
+                localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(all));
+            }
+
+            // 7. Update UI
+            user.balance = senderNewBalance;
+            document.getElementById('currentBalance').textContent = formatCurrency(senderNewBalance);
+
+            const successMsg = (bank === 'VaultBank')
+                ? `Successfully sent ${formatCurrency(amount)} to ${recipientUser.fullName}!`
+                : `Successfully sent ${formatCurrency(amount)} to ${bank} account ${account.slice(-4)}!`;
+            suc.textContent = successMsg;
+            suc.classList.add('show');
+            showToast('Transfer successful!', 'success');
+
+            document.getElementById('transferForm').reset();
+            loadRecentTransfers();
+        });
+
+        // Mobile user bar (optional)
+        function addMobileUserBar() {
+            if (window.innerWidth <= 992) {
+                if (document.querySelector('.mobile-user-bar')) return;
+                const bar = document.createElement('div');
+                bar.className = 'mobile-user-bar';
+                bar.innerHTML = `
+                    <div class="user-info-mobile">
+                        <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div class="user-name">${user.fullName}</div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="logout()" style="width:auto;flex-shrink:0;">Sign Out</button>
+                `;
+                document.querySelector('.top-bar').insertAdjacentElement('afterend', bar);
+            } else {
+                const bar = document.querySelector('.mobile-user-bar');
+                if (bar) bar.remove();
+            }
+        }
+        addMobileUserBar();
+        window.addEventListener('resize', addMobileUserBar);
+    </script>
 </body>
 </html>
