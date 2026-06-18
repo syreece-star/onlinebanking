@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultBank - Transfer</title>
+    <link rel="stylesheet" href="bank.css">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Sidebar (same as dashboard) -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-small">
+                    <div class="icon">VB</div>
+                    <span>VaultBank</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="transfer.html" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    Transfer
+                </a>
+                <a href="bills.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Pay Bills
+                </a>
+                <a href="history.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    History
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info" id="sidebarUser"></div>
+                <button class="btn btn-outline btn-sm" onclick="logout()" style="width:100%;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Sign Out
+                </button>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h2>Transfer Funds</h2>
+                    <div class="breadcrumb">Home / <span>Transfer</span></div>
+                </div>
+                <div style="font-weight:600;color:var(--gray-600);">
+                    Balance: <span id="currentBalance" style="color:var(--primary);">$0.00</span>
+                </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <!-- Transfer Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Send Money</h3>
+                    </div>
+                    <div class="error-message" id="errorMsg"></div>
+                    <div class="success-message" id="successMsg"></div>
+                    <form id="transferForm">
+                        <div class="form-group">
+                            <label for="recipientEmail">Recipient Email</label>
+                            <input type="email" id="recipientEmail" placeholder="recipient@example.com" required>
+                            <div class="form-hint">Recipient must have a VaultBank account</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="transferAmount">Amount ($)</label>
+                            <input type="number" id="transferAmount" placeholder="0.00" required min="1" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="transferNote">Note (Optional)</label>
+                            <input type="text" id="transferNote" placeholder="What's this for?">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
+                            Send Money
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Quick Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Transfers</h3>
+                    </div>
+                    <div id="recentTransfersList">
+                        <div class="empty-state">
+                            <p>No recent transfers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="bank.js"></script>
+    <script>
+        const session = requireAuth();
+        const user = getCurrentUser();
+        
+        document.getElementById('sidebarUser').innerHTML = `
+            <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
+            <div>
+                <div class="user-name">${user.fullName}</div>
+                <div class="user-email">${user.email}</div>
+            </div>
+        `;
+        document.getElementById('currentBalance').textContent = formatCurrency(user.balance);
+        
+        // Load recent transfers
+        function loadRecentTransfers() {
+            const transactions = getUserTransactions();
+            const transfers = transactions.filter(t => t.category === 'transfer').slice(0, 5);
+            const container = document.getElementById('recentTransfersList');
+            
+            if (transfers.length > 0) {
+                container.innerHTML = transfers.map(t => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--gray-100);">
+                        <div>
+                            <div style="font-weight:600;font-size:14px;">${t.description}</div>
+                            <div style="font-size:12px;color:var(--gray-400);">${formatDate(t.date)}</div>
+                        </div>
+                        <div class="amount-debit" style="font-weight:700;">-${formatCurrency(t.amount)}</div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="empty-state"><p>No recent transfers</p></div>';
+            }
+        }
+        loadRecentTransfers();
+        
+        // Handle transfer
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            errorMsg.classList.remove('show');
+            successMsg.classList.remove('show');
+            
+            const recipientEmail = document.getElementById('recipientEmail').value.trim().toLowerCase();
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const note = document.getElementById('transferNote').value.trim();
+            
+            // Validation
+            if (!recipientEmail) {
+                errorMsg.textContent = 'Please enter recipient email.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            if (recipientEmail === user.email) {
+                errorMsg.textContent = 'You cannot send money to yourself.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                errorMsg.textContent = 'Please enter a valid amount greater than $0.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            if (amount > user.balance) {
+                errorMsg.textContent = 'Insufficient funds. Your balance is ' + formatCurrency(user.balance) + '.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            // Check recipient exists
+            const users = getUsers();
+            if (!users[recipientEmail]) {
+                errorMsg.textContent = 'Recipient not found. They must have a VaultBank account.';
+                errorMsg.classList.add('show');
+                return;
+            }
+            
+            // Process transfer
+            const senderNewBalance = user.balance - amount;
+            users[user.email].balance = senderNewBalance;
+            users[recipientEmail].balance += amount;
+            saveUsers(users);
+            
+            // Add transaction for sender
+            addTransaction({
+                description: note ? `Transfer to ${users[recipientEmail].fullName}: ${note}` : `Transfer to ${users[recipientEmail].fullName}`,
+                amount: amount,
+                type: 'debit',
+                category: 'transfer',
+                balanceAfter: senderNewBalance,
+                status: 'completed',
+                recipient: recipientEmail
+            });
+            
+            // Add transaction for recipient
+            const allTransactions = localStorage.getItem(TRANSACTIONS_KEY);
+            const transactions = allTransactions ? JSON.parse(allTransactions) : {};
+            if (!transactions[recipientEmail]) transactions[recipientEmail] = [];
+            transactions[recipientEmail].unshift({
+                id: 'txn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                date: new Date().toISOString(),
+                description: note ? `Transfer from ${user.fullName}: ${note}` : `Transfer from ${user.fullName}`,
+                amount: amount,
+                type: 'credit',
+                category: 'transfer',
+                balanceAfter: users[recipientEmail].balance,
+                status: 'completed',
+                sender: user.email
+            });
+            localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
+            
+            // Update display
+            document.getElementById('currentBalance').textContent = formatCurrency(senderNewBalance);
+            user.balance = senderNewBalance;
+            
+            successMsg.textContent = `Successfully sent ${formatCurrency(amount)} to ${users[recipientEmail].fullName}!`;
+            successMsg.classList.add('show');
+            showToast('Transfer successful!', 'success');
+            
+            document.getElementById('transferForm').reset();
+            loadRecentTransfers();
+        });
+    </script>
+</body>
+</html>

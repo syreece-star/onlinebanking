@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultBank - Dashboard</title>
+    <link rel="stylesheet" href="bank.css">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-small">
+                    <div class="icon">VB</div>
+                    <span>VaultBank</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="transfer.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    Transfer
+                </a>
+                <a href="bills.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Pay Bills
+                </a>
+                <a href="history.html">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    History
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info" id="sidebarUser">
+                    <!-- Populated by JS -->
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="logout()" style="width:100%;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Sign Out
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h2>Dashboard</h2>
+                    <div class="breadcrumb">Home / <span>Dashboard</span></div>
+                </div>
+                <div id="welcomeMsg" style="font-weight:600;color:var(--gray-600);"></div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                    <div class="stat-label">Current Balance</div>
+                    <div class="stat-value" id="balanceDisplay">$0.00</div>
+                    <div class="stat-sub" id="accountTypeDisplay"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    </div>
+                    <div class="stat-label">Total Credits</div>
+                    <div class="stat-value amount-credit" id="totalCredits">$0.00</div>
+                    <div class="stat-sub">This month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+                    </div>
+                    <div class="stat-label">Total Debits</div>
+                    <div class="stat-value amount-debit" id="totalDebits">$0.00</div>
+                    <div class="stat-sub">This month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="stat-label">Account Number</div>
+                    <div class="stat-value" style="font-size:18px;word-break:break-all;" id="accountNumber">---</div>
+                </div>
+            </div>
+            
+            <!-- Recent Transactions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Transactions</h3>
+                    <a href="history.html" class="btn btn-outline btn-sm">View All</a>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentTransactions">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <p>No transactions yet.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="bank.js"></script>
+    <script>
+        // Check authentication
+        const session = requireAuth();
+        if (!session) throw new Error('Not authenticated');
+        
+        const user = getCurrentUser();
+        
+        // Populate sidebar
+        document.getElementById('sidebarUser').innerHTML = `
+            <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
+            <div>
+                <div class="user-name">${user.fullName}</div>
+                <div class="user-email">${user.email}</div>
+            </div>
+        `;
+        
+        // Welcome message
+        document.getElementById('welcomeMsg').textContent = 'Welcome, ' + user.fullName.split(' ')[0] + '! 👋';
+        
+        // Populate stats
+        document.getElementById('balanceDisplay').textContent = formatCurrency(user.balance);
+        document.getElementById('accountTypeDisplay').textContent = user.accountType.charAt(0).toUpperCase() + user.accountType.slice(1) + ' Account';
+        document.getElementById('accountNumber').textContent = user.accountNumber;
+        
+        // Calculate monthly totals
+        const transactions = getUserTransactions();
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+        
+        let totalCredits = 0;
+        let totalDebits = 0;
+        
+        transactions.forEach(txn => {
+            const txnDate = new Date(txn.date);
+            if (txnDate.getMonth() === thisMonth && txnDate.getFullYear() === thisYear) {
+                if (txn.type === 'credit') {
+                    totalCredits += txn.amount;
+                } else {
+                    totalDebits += txn.amount;
+                }
+            }
+        });
+        
+        document.getElementById('totalCredits').textContent = formatCurrency(totalCredits);
+        document.getElementById('totalDebits').textContent = formatCurrency(totalDebits);
+        
+        // Recent transactions (last 5)
+        const recentTxns = transactions.slice(0, 5);
+        const tbody = document.getElementById('recentTransactions');
+        
+        if (recentTxns.length > 0) {
+            tbody.innerHTML = recentTxns.map(txn => `
+                <tr>
+                    <td>${formatDate(txn.date)}</td>
+                    <td>${txn.description}</td>
+                    <td><span class="badge badge-${txn.type === 'credit' ? 'credit' : 'debit'}">${txn.category || txn.type}</span></td>
+                    <td class="${txn.type === 'credit' ? 'amount-credit' : 'amount-debit'}">
+                        ${txn.type === 'credit' ? '+' : '-'}${formatCurrency(txn.amount)}
+                    </td>
+                    <td><span class="badge badge-${txn.status === 'completed' ? 'credit' : 'pending'}">${txn.status || 'completed'}</span></td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>No transactions yet. Make your first transfer!</p></div></td></tr>';
+        }
+    </script>
+</body>
+</html>
